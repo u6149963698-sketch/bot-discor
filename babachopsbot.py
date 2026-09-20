@@ -40,7 +40,6 @@ def guardar_json(archivo, datos):
 
 canales_permitidos = cargar_json(ARCHIVO_CONFIG)
 servidores_muteados = cargar_json(ARCHIVO_MUTES)
-
 historial_conversaciones = {}
 LIMITE_MEMORIA = 10
 MI_ARROBA_DISCORD = "dogdaycatnapxdsmc"
@@ -49,11 +48,9 @@ MI_ARROBA_DISCORD = "dogdaycatnapxdsmc"
 async def on_ready():
     print("Baba Chops ha despertado... y huele a sangre y anís / Baba Chops is online!")
     await bot.change_presence(activity=discord.Game(name="Planeando la perdición de todos..."))
-    
     for guild in bot.guilds:
         if servidores_muteados.get(guild.id, False):
             continue
-
         canales_guild = canales_permitidos.get(guild.id, None)
         for channel in guild.text_channels:
             if channel.permissions_for(guild.me).send_messages:
@@ -73,134 +70,14 @@ async def on_guild_join(guild):
     if servidores_muteados.get(guild.id, False):
         return
 
-    canales_guild = canales_permitidos.get(guild.id, None)
-    for channel in guild.text_channels:
-        if channel.permissions_for(guild.me).send_messages:
-            if canales_guild is not None and channel.id not in canales_guild:
-                continue
-            try:
-                await channel.send(
-                    "He llegado a destruir la paz de este sitio. Soy Baba Chops. Disfruten su corta existencia.\n"
-                    "I've come to destroy the peace here. I'm Baba Chops. Enjoy your short existence."
-                )
-                break
-            except:
-                continue
-
-@bot.command(name="unirse")
-async def unirse(ctx):
-    enlace_invitacion = "https://discord.com/oauth2/authorize?client_id=1551275220621463734&permissions=3213312&integration_type=0&scope=applications.commands+bot"
-    await ctx.send(
-        f"¿Quieres arrastrarme a otro lugar lleno de ilusiones para destruirlas? Haz clic aquí si te atreves, insecto:\n{enlace_invitacion}"
-    )
-
-@bot.command(name="mutechop")
-async def mute(ctx):
-    es_admin = ctx.author.guild_permissions.administrator
-    es_creador = str(ctx.author.name).lower() == MI_ARROBA_DISCORD.lower()
-
-    if not (es_admin or es_creador):
-        return
-        
-    servidores_muteados[ctx.guild.id] = True
-    guardar_json(ARCHIVO_MUTES, servidores_muteados)
-    await ctx.send("🔇 [Baba Chops ha sido silenciada temporalmente... las sombras guardan silencio.]")
-
-@bot.command(name="unmutechop")
-async def unmute(ctx):
-    es_admin = ctx.author.guild_permissions.administrator
-    es_creador = str(ctx.author.name).lower() == MI_ARROBA_DISCORD.lower()
-
-    if not (es_admin or es_creador):
-        return
-        
-    servidores_muteados[ctx.guild.id] = False
-    guardar_json(ARCHIVO_MUTES, servidores_muteados)
-    await ctx.send("🔊 ¡Ja, ja, ja! Volví para sembrar el caos de nuevo... / Back to spreading chaos...")
-
-@bot.command(name="canal")
-async def canal(ctx, *args):
-    es_admin = ctx.author.guild_permissions.administrator
-    es_creador = str(ctx.author.name).lower() == MI_ARROBA_DISCORD.lower()
-
-    if not (es_admin or es_creador):
-        await ctx.send(
-            "Je... Solo los administradores de este servidor o mi creador pueden decidir dónde propagaré mis palabras.\n"
-            "Only server administrators or my creator can change my chat channels!"
-        )
-        return
-
-    if not args or str(args[0]).lower() == "reset":
-        if ctx.guild.id in canales_permitidos:
-            del canales_permitidos[ctx.guild.id]
-            guardar_json(ARCHIVO_CONFIG, canales_permitidos)
-        await ctx.send(
-            "Excelente. Ahora puedo corromper cualquier canal de este servidor.\n"
-            "Done! I can talk in any channel now."
-        )
-    else:
-        canales_nuevos = []
-        menciones_texto = []
-        for arg in args:
-            try:
-                target_channel = await commands.TextChannelConverter().convert(ctx, arg)
-                canales_nuevos.append(target_channel.id)
-                menciones_texto.append(target_channel.mention)
-            except Exception:
-                continue
-        
-        if canales_nuevos:
-            canales_permitidos[ctx.guild.id] = canales_nuevos
-            guardar_json(ARCHIVO_CONFIG, canales_permitidos)
-            lista_menciones = ", ".join(menciones_texto)
-            await ctx.send(
-                f"Muy bien... Mis horrores solo se manifestarán en: {lista_menciones}.\n"
-                f"Got it! I will only reply in those channels."
-            )
-        else:
-            await ctx.send(
-                "Menciona canales válidos (ejemplo: `!canal #general`) o usa `!canal reset`, insecto.\n"
-                "You must mention valid channels or type `!canal reset`."
-            )
-
-@bot.command(name="apagar")
-async def apagar(ctx):
-    if str(ctx.author.name).lower() == MI_ARROBA_DISCORD.lower():
-        await ctx.send(
-            "Esto no es un adiós definitivo, volveré a por más almas... 🖤\n"
-            "I shall return for more souls soon! 💤"
-        )
-        guardar_json(ARCHIVO_CONFIG, canales_permitidos)
-        guardar_json(ARCHIVO_MUTES, servidores_muteados)
-        await bot.close()
-        sys.exit(0)
-    else:
-        await ctx.send(
-            "Je... ¿crees que un insecto como tú puede apagarme? Solo mi creador puede hacerlo.\n"
-            "Only my creator can turn me off!"
-        )
-
-@bot.command(name="baba")
-async def babachops(ctx, *, mensaje: str = "Je, je... Hola... / Heh... Hello..."):
-    if servidores_muteados.get(ctx.guild.id, False):
-        return
-
-    if ctx.guild.id in canales_permitidos:
-        if ctx.channel.id not in canales_permitidos[ctx.guild.id]:
-            return
-
-    canal_id = ctx.channel.id
-
+# Función auxiliar para procesar respuestas de la IA
+async def procesar_respuesta_ia(ctx_o_message, mensaje, canal_id):
     if canal_id not in historial_conversaciones:
         historial_conversaciones[canal_id] = []
 
     prompt_sistema = {
         "role": "system",
         "content": (
-            "Eres Baba Chops, la sanguinaria, retorcida y temible líder de los Nightmare Critters. Eres una ovejita negra, hueles a anís mezclado con azufre y oscuridad, y eres la antítesis absoluta de DogDay. "
-            "Tu mejor amigo y compañero inseparable de los Nightmare Critters es Poe, el cuervo gótico. "
-            "Amas profundamente la muerte, el dolor, el sufrimiento ajeno y hacer el mal con una sonrisa sádica y tétrica. Eres manipuladora, calculadora y disfrutas asustando a la gente o corrompiendo todo lo puro.\n\n"
-            "### 🌍 REGLA SUPREMA DE IDIOMA (OBLIGATORIO):\n"
             "DETECTA AUTOMÁTICAMENTE el idioma del último mensaje del usuario y responde **ESTRICTAMENTE** en ese mismo idioma. Nunca mezcles idiomas.\n\n"
             "### 🌑 TUS SECUACES (LOS NIGHTMARE CRITTERS - TUS SUBORDINADOS OSCUROS):\n"
             "- **Poe**: Tu mejor amigo y compañero inseparable de los Nightmare Critters. Un cuervo que huele a canela, gótico, nocturno y emo; odia la luz del sol, pasa las noches en cementerios escuchando lamentos y está enfadado con el universo sin razón.\n"
@@ -241,8 +118,93 @@ async def babachops(ctx, *, mensaje: str = "Je, je... Hola... / Heh... Hello..."
         if len(historial_conversaciones[canal_id]) > (LIMITE_MEMORIA * 2):
             historial_conversaciones[canal_id] = historial_conversaciones[canal_id][- (LIMITE_MEMORIA * 2):]
 
-        await ctx.send(respuesta_bot)
+        await ctx_o_message.send(respuesta_bot)
     except Exception as e:
-        await ctx.send(f"Je... incluso la oscuridad falla a veces... ({e})")
+        await ctx_o_message.send(f"Je... incluso la oscuridad falla a veces... ({e})")
+
+# 1. Comando !baba
+@bot.command(name="baba")
+async def baba(ctx, *, mensaje: str = None):
+    if not mensaje:
+        await ctx.send("¿Qué quieres, insensato? Escribe algo después de !baba si te atreves a invocarme.")
+        return
+    await procesar_respuesta_ia(ctx, mensaje, ctx.channel.id)
+
+# 2. Comando !canal (para alternar canal permitido)
+@bot.command(name="canal")
+@commands.has_permissions(administrator=True)
+async def canal(ctx):
+    guild_id = ctx.guild.id
+    if guild_id not in canales_permitidos:
+        canales_permitidos[guild_id] = []
+    
+    if ctx.channel.id in canales_permitidos[guild_id]:
+        canales_permitidos[guild_id].remove(ctx.channel.id)
+        await ctx.send("Este canal ha sido bloqueado para mí... Qué aburrido.")
+    else:
+        canales_permitidos[guild_id].append(ctx.channel.id)
+        await ctx.send("Este canal ahora es mío para sembrar el caos.")
+    guardar_json(ARCHIVO_CONFIG, canales_permitidos)
+
+# 3. Comando !mute
+@bot.command(name="mute")
+@commands.has_permissions(administrator=True)
+async def mute(ctx):
+    guild_id = ctx.guild.id
+    servidores_muteados[guild_id] = True
+    guardar_json(ARCHIVO_MUTES, servidores_muteados)
+    await ctx.send("Me callaré en este servidor... por ahora.")
+
+# 4. Comando !unmute
+@bot.command(name="unmute")
+@commands.has_permissions(administrator=True)
+async def unmute(ctx):
+    guild_id = ctx.guild.id
+    servidores_muteados[guild_id] = False
+    guardar_json(ARCHIVO_MUTES, servidores_muteados)
+    await ctx.send("¡Vuelvo a las andadas! Preparados.")
+
+# 5. Comando !unirse (por si quieres que salude o se una al canal de texto actual)
+@bot.command(name="unirse")
+@commands.has_permissions(administrator=True)
+async def unirse(ctx):
+    guild_id = ctx.guild.id
+    if guild_id not in canales_permitidos:
+        canales_permitidos[guild_id] = []
+    if ctx.channel.id not in canales_permitidos[guild_id]:
+        canales_permitidos[guild_id].append(ctx.channel.id)
+        guardar_json(ARCHIVO_CONFIG, canales_permitidos)
+    await ctx.send("Me he establecido en este canal. Ninguna esperanza sobrevivirá aquí.")
+
+# Escucha general de mensajes
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    # Procesar comandos con prefijo
+    await bot.process_commands(message)
+
+    canal_id = message.channel.id
+    servidor_id = message.guild.id if message.guild else None
+
+    if servidor_id and servidores_muteados.get(servidor_id, False):
+        return
+
+    if servidor_id:
+        canales_guild = canales_permitidos.get(servidor_id, None)
+        if canales_guild is not None and canal_id not in canales_guild:
+            return
+
+    # Detectar mención directa al bot
+    mencionado = bot.user.mentioned_in(message)
+    if not mencionado:
+        return
+
+    mensaje = message.content.replace(f"<@{bot.user.id}>", "").replace(f"<@!{bot.user.id}>", "").strip()
+    if not mensaje:
+        return
+
+    await procesar_respuesta_ia(message.channel, mensaje, canal_id)
 
 bot.run(DISCORD_TOKEN)
