@@ -40,7 +40,7 @@ def guardar_json(archivo, datos):
 
 # Diccionarios cargados desde archivos persistentes
 canales_permitidos = cargar_json(ARCHIVO_CONFIG)
-servidores_muteados = cargar_json(ARCHIVO_MUTES) # Guarda IDs de servidores que están muteados (True)
+servidores_muteados = cargar_json(ARCHIVO_MUTES)
 
 # Diccionario para almacenar la memoria de la conversación por cada canal
 historial_conversaciones = {}
@@ -55,7 +55,6 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name="Protegiendo a los Smiling Critters!"))
     
     for guild in bot.guilds:
-        # Si el servidor está muteado, no envía ningún saludo automático de encendido
         if servidores_muteados.get(guild.id, False):
             continue
 
@@ -75,7 +74,6 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):
-    # Si el servidor está muteado, no envía saludo al unirse
     if servidores_muteados.get(guild.id, False):
         return
 
@@ -113,7 +111,6 @@ async def unmute(ctx):
 
 @bot.command(name="unirse")
 async def unirse(ctx):
-    # Si el servidor está muteado, bloquea también el comando unirse
     if servidores_muteados.get(ctx.guild.id, False):
         return
 
@@ -191,7 +188,6 @@ async def apagar(ctx):
 
 @bot.command(name="dogday")
 async def dogday(ctx, *, mensaje: str = "¡Hola, amigo! / Hello, friend!"):
-    # Si el servidor está muteado, ignoramos el comando por completo
     if servidores_muteados.get(ctx.guild.id, False):
         return
 
