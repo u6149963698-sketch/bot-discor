@@ -6,7 +6,7 @@ from discord.ext import commands
 from groq import Groq
 
 # Token de Baba Chops y tu API Key de Groq
-DISCORD_TOKEN = "MTU1MTI3NTIyMDYyMTQ2MzczNA.GgxQFV.jZcyTrGWokMMo-B0wrH9AljdxZhHCCYoVrucr4"
+DISCORD_TOKEN = "MTU1MTI3NTIyMDYyMTQ2MzczNA.G_3Da6.KoOZLqKcB6C9OeqJaxUQwvtWbho9O-AVOMb--M"
 GROQ_API_KEY = "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"
 
 client = Groq(api_key=GROQ_API_KEY)
