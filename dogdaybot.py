@@ -6,7 +6,7 @@ from discord.ext import commands
 from groq import Groq
 
 # Tus credenciales
-DISCORD_TOKEN = "MTU0NTEyODE5OTI1MDI1MTg3Nw.GejKnQ.LWu4rXAyrKFceOx55DDGVC-k-mrPPKC8xe43RI"
+DISCORD_TOKEN = "MTU0NTEyODE5OTI1MDI1MTg3Nw.Ghc9aY.PJ7xkS13SyoaI_TVsZASsmRle0BAdn-9-1dYwQ"
 GROQ_API_KEY = "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"
 
 client = Groq(api_key=GROQ_API_KEY)
